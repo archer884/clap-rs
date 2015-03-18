@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use args::{ FlagArg, OptArg, PosArg };
 use subcommand::SubCommand;
@@ -110,6 +111,28 @@ impl ArgMatches {
             }  
         }
         None
+    }
+
+    /// Gets the parsed value of a specific option or positional argument (i.e. an argument 
+    /// that takes an additional value at runtime). If the option wasn't present at runtime,
+    /// or if the valueprovided could not be parsed as the requried type, it returns `None`
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use clap::{ App, Arg };
+    ///
+    /// let matches = App::new("myapp").arg(Arg::new("count").takes_value(true)).get_matches();
+    /// if let Some(count) = matches.value_of("count") {
+    ///     println!("{}", count + 5u32);
+    /// }
+    /// ```
+    pub fn parsed_value_of<T: FromStr>(&self, name: &'static str) -> Option<T>
+    {
+        match self.value_of(name) {
+            Some(value) => value.parse().ok(),
+            None => None
+        }
     }
 
     /// Checks if a flag was argument was supplied at runtime. **DOES NOT** work for
